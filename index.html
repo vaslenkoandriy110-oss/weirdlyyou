@@ -32,7 +32,7 @@
         <a href="#generator">Generate</a>
         <a href="#leaderboard">Leaderboard</a>
         <a href="#spotlight">Donor Wall</a>
-        <a href="#monetize">Support</a>
+        <a href="#donate">Support</a>
       </nav>
     </header>
 
@@ -47,6 +47,7 @@
           </p>
           <div class="hero-actions">
             <a class="btn primary" href="#generator">Start the chaos</a>
+            <a class="btn secondary" id="heroDonateButton" href="#" target="_blank" rel="noreferrer">Donate $1</a>
             <button class="btn ghost" id="randomDemoButton">Generate random demo</button>
           </div>
         </div>
@@ -180,9 +181,9 @@
           <span class="eyebrow">Monetization idea</span>
           <h2>Leave a message for everyone to see</h2>
           <p>
-            This is the viral donation mechanic: a visitor donates $1, writes a short message,
-            and the message appears in the live spotlight for 30 seconds. On GitHub Pages this runs
-            in demo mode. For a real global wall, connect a database and payment webhook.
+            This is the viral donation mechanic: a visitor donates $1 on Donatello, writes a short message,
+            GitHub Actions syncs it into donations.json, and the site shows it in the live spotlight
+            for 30 seconds. Free version is not instant, but it works globally for all visitors.
           </p>
           <div class="donor-benefits">
             <span>⚡ 30-second live spotlight</span>
@@ -192,7 +193,11 @@
         </div>
 
         <form class="spotlight-form" id="spotlightForm">
-          <div class="demo-badge">DEMO MODE · local browser only</div>
+          <div class="demo-badge">GLOBAL MODE · Donatello + GitHub Actions</div>
+          <div class="payment-mini-card">
+            <strong>Real flow: donate on Donatello</strong>
+            <span>Your Donatello name/message will be synced automatically. The form below is only for local testing.</span>
+          </div>
           <label>
             <span>Your display name</span>
             <input id="spotlightNameInput" maxlength="24" placeholder="MemeLord99" autocomplete="off" />
@@ -211,7 +216,7 @@
             <button class="btn primary" type="submit">Put message on wall</button>
           </div>
           <p class="form-note">
-            Real version: the button should open Stripe/PayPal/Ko-fi, and a webhook should approve the message automatically.
+            Real paid messages come from Donatello through the GitHub Action. This form is only a local test tool.
           </p>
         </form>
 
@@ -227,10 +232,23 @@
         </div>
       </section>
 
+      <section class="donation-panel glass" id="donate">
+        <div>
+          <span class="eyebrow">Support</span>
+          <h2>Donate $1 to keep the chaos alive</h2>
+          <p>Use a Ukraine-friendly donation provider below. After donating, visitors can test the Donor Spotlight message wall. For a real verified global wall, add a payment webhook later.</p>
+        </div>
+        <div class="donation-buttons">
+          <a class="btn secondary" id="donatelloDonateButton" href="#" target="_blank" rel="noreferrer">Donatello</a>
+          <a class="btn secondary" id="monoDonateButton" href="#" target="_blank" rel="noreferrer">mono jar</a>
+          <a class="btn ghost" id="paypalDonateButton" href="#" target="_blank" rel="noreferrer">PayPal</a>
+        </div>
+      </section>
+
       <section class="feature-grid">        <article class="feature-card glass">
           <span class="feature-icon">💸</span>
-          <h3>Donation button</h3>
-          <p>Use the button below to connect Buy Me a Coffee, PayPal, Monobank, or any link you want.</p>
+          <h3>Donatello sync ready</h3>
+          <p>Main donate buttons use one config in app.js. Real Donatello messages sync through GitHub Actions into donations.json.</p>
           <a class="btn secondary wide" id="donateButton" href="#" target="_blank" rel="noreferrer">Support this weird site</a>
         </article>
 
@@ -244,7 +262,7 @@
         <article class="feature-card glass">
           <span class="feature-icon">🔒</span>
           <h3>Safer by design</h3>
-          <p>Everything works locally in the browser. No passwords, no card data, no fake prizes.</p>
+          <p>Your Donatello API token stays in GitHub Secrets. The public site only reads donations.json, not your private token.</p>
         </article>
       </section>
 
@@ -253,7 +271,7 @@
           <div>
             <span class="eyebrow">Local leaderboard</span>
             <h2>Most unhinged visitors</h2>
-            <p>This is saved only in the current browser. Add a backend later for a global public ranking.</p>
+            <p>This ranking is still saved only in the current browser. The donor spotlight is the global feature.</p>
           </div>
           <button class="btn ghost" id="clearLeaderboardButton" type="button">Clear ranking</button>
         </div>

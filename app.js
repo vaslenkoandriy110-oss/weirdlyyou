@@ -1,9 +1,22 @@
 const CONFIG = {
-  // Replace this with your real link: Buy Me a Coffee, PayPal, Monobank jar, Patreon, etc.
-  donationUrl: "https://www.buymeacoffee.com/yourname",
+  // STEP 1: Create a Ukrainian-friendly donation page, then paste your real links here.
+  // Donatello example: https://donatello.to/yourname
+  // monobank Jar example: https://send.monobank.ua/jar/YOUR_JAR_ID
+  // PayPal example: https://www.paypal.com/paypalme/yourname
+  donationUrl: "https://donatello.to/yourname",
+  donationLinks: {
+    donatello: "https://donatello.to/",
+    monobank: "https://send.monobank.ua/jar/YOUR_JAR_ID",
+    paypal: "https://www.paypal.com/paypalme/yourname",
+  },
   siteName: "AI Knows Too Much",
   spotlightDurationMs: 30000,
-  spotlightMode: "local-demo", // local-demo on GitHub Pages. Use backend-webhook for real global paid messages.
+  spotlightMode: "github-actions-donatello",
+
+  // GitHub Actions writes this file from your Donatello account.
+  donationsFeedUrl: "donations.json",
+  donationsPollMs: 20000,
+  showLatestDonationsOnFirstVisit: 3,
 };
 
 const moods = [
@@ -145,8 +158,7 @@ function init() {
   });
   moodInput.value = moods[1];
 
-  donateButton.href = CONFIG.donationUrl;
-  if (spotlightDonateButton) spotlightDonateButton.href = CONFIG.donationUrl;
+  wireDonationButtons();
   document.querySelectorAll(".mode-card").forEach((button) => {
     button.addEventListener("click", () => {
       selectedChaos = Number(button.dataset.chaos);
@@ -171,6 +183,26 @@ function init() {
   renderLeaderboard();
   renderSpotlightQueue();
   bootSpotlight();
+  bootGlobalDonatelloFeed();
+}
+
+function wireDonationButtons() {
+  const donationTargets = [
+    ["donateButton", CONFIG.donationUrl],
+    ["spotlightDonateButton", CONFIG.donationUrl],
+    ["heroDonateButton", CONFIG.donationUrl],
+    ["donatelloDonateButton", CONFIG.donationLinks.donatello],
+    ["monoDonateButton", CONFIG.donationLinks.monobank],
+    ["paypalDonateButton", CONFIG.donationLinks.paypal],
+  ];
+
+  donationTargets.forEach(([id, url]) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    element.href = url || CONFIG.donationUrl;
+    element.target = "_blank";
+    element.rel = "noreferrer";
+  });
 }
 
 function sanitize(value, fallback) {
@@ -463,7 +495,7 @@ function handleSpotlightSubmit(event) {
   spotlightForm.reset();
   updateMessageCounter();
   renderSpotlightQueue();
-  showToast("Message added to the local demo queue.");
+  showToast("Local test message added. Real paid messages come from Donatello.");
 
   if (!activeSpotlight) startNextSpotlight();
 }
@@ -498,8 +530,8 @@ function startNextSpotlight() {
 
 function renderEmptySpotlight() {
   window.clearInterval(spotlightInterval);
-  $("#spotlightLiveName").textContent = "No message on screen yet";
-  $("#spotlightLiveMessage").textContent = "Donate $1 and put your message here for 30 seconds.";
+  $("#spotlightLiveName").textContent = "Waiting for Donatello messages";
+  $("#spotlightLiveMessage").textContent = "When someone donates and leaves a message, it will appear here for 30 seconds.";
   $("#spotlightSeconds").textContent = "30s";
   $("#spotlightProgress").style.width = "0%";
 }
@@ -533,7 +565,7 @@ function renderSpotlightQueue() {
   spotlightQueueList.innerHTML = "";
 
   if (!queue.length) {
-    spotlightQueueList.innerHTML = `<div class="empty-state">No messages waiting. Add one to test the donor wall.</div>`;
+    spotlightQueueList.innerHTML = `<div class="empty-state">No messages waiting. New Donatello messages will appear here after the GitHub Action syncs.</div>`;
     return;
   }
 
@@ -558,6 +590,83 @@ function clearSpotlightWall() {
   renderSpotlightQueue();
   renderEmptySpotlight();
   showToast("Donor wall cleared in this browser.");
+}
+
+function getSeenDonationIds() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem("akttm_seen_donations") || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSeenDonationIds(ids) {
+  localStorage.setItem("akttm_seen_donations", JSON.stringify([...ids].slice(-200)));
+}
+
+function normalizeDonationFromFeed(donation) {
+  const id = sanitize(donation.id || `${donation.name}-${donation.message}-${donation.createdAt}`, "unknown");
+  const name = sanitize(donation.name || "Anonymous supporter", "Anonymous supporter").slice(0, 24);
+  const message = sanitize(donation.message || "Supported the chaos.", "Supported the chaos.").slice(0, 110);
+  const amount = sanitize(donation.amount || "Donatello", "Donatello").slice(0, 24);
+
+  if (message.length < 2 || isUnsafeSpotlightMessage(message)) return null;
+
+  return {
+    id: `donatello-${id}`,
+    name,
+    message,
+    amount,
+    durationMs: CONFIG.spotlightDurationMs,
+    createdAt: donation.createdAt || new Date().toISOString(),
+  };
+}
+
+async function fetchGlobalDonatelloMessages({ initial = false } = {}) {
+  if (!CONFIG.donationsFeedUrl) return;
+
+  try {
+    const response = await fetch(`${CONFIG.donationsFeedUrl}?v=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Feed HTTP ${response.status}`);
+
+    const data = await response.json();
+    const donations = Array.isArray(data.donations) ? data.donations : [];
+    if (!donations.length) return;
+
+    const seen = getSeenDonationIds();
+    const queue = getSpotlightQueue();
+    const alreadyQueued = new Set(queue.map((item) => item.id));
+    if (activeSpotlight?.id) alreadyQueued.add(activeSpotlight.id);
+
+    let incoming = donations
+      .map(normalizeDonationFromFeed)
+      .filter(Boolean)
+      .filter((item) => !seen.has(item.id) && !alreadyQueued.has(item.id));
+
+    if (initial && incoming.length > CONFIG.showLatestDonationsOnFirstVisit) {
+      incoming = incoming.slice(0, CONFIG.showLatestDonationsOnFirstVisit);
+    }
+
+    if (!incoming.length) return;
+
+    incoming.reverse().forEach((item) => {
+      queue.push(item);
+      seen.add(item.id);
+    });
+
+    saveSpotlightQueue(queue);
+    saveSeenDonationIds(seen);
+    renderSpotlightQueue();
+    if (!activeSpotlight) startNextSpotlight();
+    showToast(`Loaded ${incoming.length} Donatello message${incoming.length > 1 ? "s" : ""}.`);
+  } catch (error) {
+    console.warn("Could not load Donatello donations feed:", error);
+  }
+}
+
+function bootGlobalDonatelloFeed() {
+  fetchGlobalDonatelloMessages({ initial: true });
+  window.setInterval(() => fetchGlobalDonatelloMessages(), CONFIG.donationsPollMs);
 }
 
 init();

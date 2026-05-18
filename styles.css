@@ -1095,3 +1095,63 @@ label small {
     padding-left: 56px;
   }
 }
+
+
+.donation-panel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  margin: 22px 0;
+  padding: 28px;
+  border-radius: var(--radius-xl);
+}
+
+.donation-panel h2 {
+  margin: 8px 0 0;
+  font-size: clamp(28px, 4vw, 44px);
+  letter-spacing: -0.05em;
+}
+
+.donation-panel p {
+  max-width: 740px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.donation-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.payment-mini-card {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.075);
+  color: var(--text);
+}
+
+.payment-mini-card span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 780px) {
+  .donation-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .donation-buttons {
+    justify-content: stretch;
+  }
+
+  .donation-buttons .btn {
+    width: 100%;
+  }
+}
