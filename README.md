@@ -104,3 +104,9 @@ There are ad placeholders in the HTML. Add real ad code only after approval by y
 ## Privacy
 
 The current static version does not send form data to a server. The leaderboard and donor wall demo use browser localStorage.
+
+## AADS ad block
+
+The AADS ad unit `2438116` has been embedded in `index.html` in the main advertisement section above the generator.
+
+If the ad does not show locally, test it after deploying to GitHub Pages and disable ad blockers for your own test. Never ask users to click ads.
