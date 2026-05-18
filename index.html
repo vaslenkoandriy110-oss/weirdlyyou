@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Knows Too Much — Weird Personality Generator</title>
+    <meta
+      name="description"
+      content="A weird viral personality generator that creates funny fake facts about you. Built for sharing, memes, and harmless chaos."
+    />
+    <meta property="og:title" content="AI Knows Too Much" />
+    <meta property="og:description" content="Enter a few harmless details and get weirdly accurate fake facts about yourself." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#090916" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-one"></div>
+    <div class="bg-orb orb-two"></div>
+    <div class="bg-orb orb-three"></div>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="AI Knows Too Much home">
+        <span class="brand-icon">✦</span>
+        <span>
+          <strong>AI Knows Too Much</strong>
+          <small>weird personality generator</small>
+        </span>
+      </a>
+
+      <nav class="top-nav" aria-label="Main navigation">
+        <a href="#generator">Generate</a>
+        <a href="#leaderboard">Leaderboard</a>
+        <a href="#monetize">Support</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="pill">🔥 Built for TikTok, Reddit, group chats, and bad decisions</div>
+          <h1>Let a website expose your personality in 10 seconds.</h1>
+          <p>
+            Enter a few harmless details and get weirdly specific fake facts about yourself.
+            Share the result with friends and pretend it did not hurt.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#generator">Start the chaos</a>
+            <button class="btn ghost" id="randomDemoButton">Generate random demo</button>
+          </div>
+        </div>
+
+        <aside class="hero-card glass">
+          <span class="eyebrow">Live example</span>
+          <h2 id="demoType">Caffeinated Goblin</h2>
+          <p id="demoText">
+            Alex is powered by iced coffee, suspicious optimism, and a belief that everything will somehow work out.
+          </p>
+          <div class="mini-stats">
+            <span><strong id="demoAccuracy">91%</strong> accuracy</span>
+            <span><strong id="demoWeirdness">88%</strong> weirdness</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="ad-wrap" aria-label="Advertisement placeholder">
+        <div class="ad-box">
+          <span>ADVERTISEMENT PLACEHOLDER</span>
+          <p>Put real ad code here after approval. Never ask users to click ads.</p>
+        </div>
+      </section>
+
+      <section class="app-grid" id="generator">
+        <form class="generator-card glass" id="generatorForm">
+          <div class="section-heading">
+            <span class="eyebrow">Generator</span>
+            <h2>Create your weird facts</h2>
+            <p>No login. No private data. Just harmless fictional chaos.</p>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              <span>Name or nickname</span>
+              <input id="nameInput" maxlength="24" placeholder="Alex" autocomplete="off" />
+            </label>
+
+            <label>
+              <span>Favorite snack/drink</span>
+              <input id="foodInput" maxlength="32" placeholder="iced coffee" autocomplete="off" />
+            </label>
+
+            <label>
+              <span>Current mood</span>
+              <select id="moodInput"></select>
+            </label>
+
+            <label>
+              <span>One random thing about you</span>
+              <input id="randomInput" maxlength="80" placeholder="I have 47 tabs open" autocomplete="off" />
+            </label>
+          </div>
+
+          <div class="mode-group" role="radiogroup" aria-label="Chaos mode">
+            <button type="button" class="mode-card" data-chaos="1">
+              <strong>Soft</strong>
+              <small>Cute and harmless</small>
+            </button>
+            <button type="button" class="mode-card active" data-chaos="2">
+              <strong>Medium</strong>
+              <small>Funny but personal</small>
+            </button>
+            <button type="button" class="mode-card" data-chaos="3">
+              <strong>Unhinged</strong>
+              <small>Share at your own risk</small>
+            </button>
+          </div>
+
+          <button class="btn primary wide" type="submit">Generate my weird facts ✨</button>
+        </form>
+
+        <section class="result-card glass hidden" id="resultCard" aria-live="polite">
+          <div class="result-topline">
+            <span class="pill small">Generated with suspicious confidence</span>
+            <button class="icon-btn" id="closeResultButton" aria-label="Close result">×</button>
+          </div>
+
+          <span class="eyebrow">Your type</span>
+          <h2 id="resultType">Side Quest NPC</h2>
+          <p class="result-intro" id="resultIntro"></p>
+
+          <div class="score-grid">
+            <div>
+              <span>Accuracy</span>
+              <strong id="accuracyScore">87%</strong>
+            </div>
+            <div>
+              <span>Weirdness</span>
+              <strong id="weirdnessScore">93%</strong>
+            </div>
+            <div>
+              <span>Shareability</span>
+              <strong id="shareScore">High</strong>
+            </div>
+          </div>
+
+          <div class="facts-list" id="factsList"></div>
+
+          <div class="result-actions">
+            <button class="btn primary" id="shareButton" type="button">Share result</button>
+            <button class="btn secondary" id="copyButton" type="button">Copy</button>
+            <button class="btn ghost" id="againButton" type="button">Again</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="feature-grid">
+        <article class="feature-card glass">
+          <span class="feature-icon">💸</span>
+          <h3>Donation button</h3>
+          <p>Use the button below to connect Buy Me a Coffee, PayPal, Monobank, or any link you want.</p>
+          <a class="btn secondary wide" id="donateButton" href="#" target="_blank" rel="noreferrer">Support this weird site</a>
+        </article>
+
+        <article class="feature-card glass" id="monetize">
+          <span class="feature-icon">📢</span>
+          <h3>Ad slots</h3>
+          <p>There are safe ad placeholders in the layout. Add real ad code only after your site is approved.</p>
+          <div class="tiny-ad">300×250 ad placeholder</div>
+        </article>
+
+        <article class="feature-card glass">
+          <span class="feature-icon">🔒</span>
+          <h3>Safer by design</h3>
+          <p>Everything works locally in the browser. No passwords, no card data, no fake prizes.</p>
+        </article>
+      </section>
+
+      <section class="leaderboard glass" id="leaderboard">
+        <div class="leaderboard-header">
+          <div>
+            <span class="eyebrow">Local leaderboard</span>
+            <h2>Most unhinged visitors</h2>
+            <p>This is saved only in the current browser. Add a backend later for a global public ranking.</p>
+          </div>
+          <button class="btn ghost" id="clearLeaderboardButton" type="button">Clear ranking</button>
+        </div>
+        <div class="leaderboard-list" id="leaderboardList"></div>
+      </section>
+
+      <section class="viral-plan glass">
+        <span class="eyebrow">Growth loop</span>
+        <h2>Why this has a chance to spread</h2>
+        <div class="steps">
+          <div><strong>1</strong><span>User gets a personal result.</span></div>
+          <div><strong>2</strong><span>Result feels funny enough to screenshot or copy.</span></div>
+          <div><strong>3</strong><span>Friend clicks and generates their own result.</span></div>
+          <div><strong>4</strong><span>Traffic can be monetized later with ads, donations, and premium modes.</span></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>This is a parody/personality entertainment site. Do not enter private information. Results are fictional.</p>
+      <p><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

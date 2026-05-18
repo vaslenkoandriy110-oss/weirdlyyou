@@ -1,0 +1,10 @@
+{
+  "name": "ai-knows-too-much-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A static weird personality generator website.",
+  "scripts": {
+    "start": "python3 -m http.server 5173",
+    "start:windows": "py -m http.server 5173"
+  }
+}
