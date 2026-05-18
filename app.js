@@ -2,6 +2,8 @@ const CONFIG = {
   // Replace this with your real link: Buy Me a Coffee, PayPal, Monobank jar, Patreon, etc.
   donationUrl: "https://www.buymeacoffee.com/yourname",
   siteName: "AI Knows Too Much",
+  spotlightDurationMs: 30000,
+  spotlightMode: "local-demo", // local-demo on GitHub Pages. Use backend-webhook for real global paid messages.
 };
 
 const moods = [
@@ -127,6 +129,12 @@ const resultCard = $("#resultCard");
 const factsList = $("#factsList");
 const leaderboardList = $("#leaderboardList");
 const toast = $("#toast");
+const spotlightForm = $("#spotlightForm");
+const spotlightQueueList = $("#spotlightQueueList");
+const spotlightMessageInput = $("#spotlightMessageInput");
+const spotlightDonateButton = $("#spotlightDonateButton");
+let activeSpotlight = null;
+let spotlightInterval = null;
 
 function init() {
   moods.forEach((mood) => {
@@ -138,6 +146,7 @@ function init() {
   moodInput.value = moods[1];
 
   donateButton.href = CONFIG.donationUrl;
+  if (spotlightDonateButton) spotlightDonateButton.href = CONFIG.donationUrl;
   document.querySelectorAll(".mode-card").forEach((button) => {
     button.addEventListener("click", () => {
       selectedChaos = Number(button.dataset.chaos);
@@ -153,9 +162,15 @@ function init() {
   $("#againButton").addEventListener("click", handleGenerate);
   $("#closeResultButton").addEventListener("click", () => resultCard.classList.add("hidden"));
   $("#clearLeaderboardButton").addEventListener("click", clearLeaderboard);
+  if (spotlightForm) spotlightForm.addEventListener("submit", handleSpotlightSubmit);
+  if (spotlightMessageInput) spotlightMessageInput.addEventListener("input", updateMessageCounter);
+  const clearSpotlightButton = $("#clearSpotlightButton");
+  if (clearSpotlightButton) clearSpotlightButton.addEventListener("click", clearSpotlightWall);
 
   randomDemo();
   renderLeaderboard();
+  renderSpotlightQueue();
+  bootSpotlight();
 }
 
 function sanitize(value, fallback) {
@@ -370,6 +385,179 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+
+function updateMessageCounter() {
+  const counter = $("#messageCounter");
+  if (!counter || !spotlightMessageInput) return;
+  counter.textContent = String(spotlightMessageInput.value.length);
+}
+
+function getSpotlightQueue() {
+  try {
+    return JSON.parse(localStorage.getItem("akttm_spotlight_queue") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveSpotlightQueue(queue) {
+  localStorage.setItem("akttm_spotlight_queue", JSON.stringify(queue.slice(0, 20)));
+}
+
+function isUnsafeSpotlightMessage(message) {
+  const normalized = message.toLowerCase();
+  const blockedFragments = [
+    "http://",
+    "https://",
+    "www.",
+    "discord.gg",
+    "t.me/",
+    "@everyone",
+    "<script",
+    "casino",
+    "crypto pump",
+    "free money",
+    "onlyfans",
+  ];
+  return blockedFragments.some((fragment) => normalized.includes(fragment));
+}
+
+function handleSpotlightSubmit(event) {
+  event.preventDefault();
+
+  const name = sanitize($("#spotlightNameInput").value, "Anonymous Goblin").slice(0, 24);
+  const message = sanitize($("#spotlightMessageInput").value, "").slice(0, 110);
+  const proof = sanitize($("#paymentProofInput").value, "demo").slice(0, 40);
+
+  if (name.length < 2) {
+    showToast("Add a display name first.");
+    return;
+  }
+
+  if (message.length < 5) {
+    showToast("Message is too short. Make it funnier.");
+    return;
+  }
+
+  if (isUnsafeSpotlightMessage(message)) {
+    showToast("Message blocked: no links, spam, casino, or suspicious promos.");
+    return;
+  }
+
+  const item = {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    name,
+    message,
+    proof,
+    amount: "$1",
+    durationMs: CONFIG.spotlightDurationMs,
+    createdAt: new Date().toISOString(),
+  };
+
+  const queue = getSpotlightQueue();
+  queue.push(item);
+  saveSpotlightQueue(queue);
+
+  spotlightForm.reset();
+  updateMessageCounter();
+  renderSpotlightQueue();
+  showToast("Message added to the local demo queue.");
+
+  if (!activeSpotlight) startNextSpotlight();
+}
+
+function bootSpotlight() {
+  updateMessageCounter();
+  startNextSpotlight();
+}
+
+function startNextSpotlight() {
+  const queue = getSpotlightQueue();
+  const next = queue.shift();
+  saveSpotlightQueue(queue);
+  renderSpotlightQueue();
+
+  if (!next) {
+    activeSpotlight = null;
+    renderEmptySpotlight();
+    return;
+  }
+
+  activeSpotlight = {
+    ...next,
+    startedAt: Date.now(),
+    endsAt: Date.now() + Number(next.durationMs || CONFIG.spotlightDurationMs),
+  };
+
+  renderActiveSpotlight();
+  window.clearInterval(spotlightInterval);
+  spotlightInterval = window.setInterval(renderActiveSpotlight, 250);
+}
+
+function renderEmptySpotlight() {
+  window.clearInterval(spotlightInterval);
+  $("#spotlightLiveName").textContent = "No message on screen yet";
+  $("#spotlightLiveMessage").textContent = "Donate $1 and put your message here for 30 seconds.";
+  $("#spotlightSeconds").textContent = "30s";
+  $("#spotlightProgress").style.width = "0%";
+}
+
+function renderActiveSpotlight() {
+  if (!activeSpotlight) {
+    renderEmptySpotlight();
+    return;
+  }
+
+  const now = Date.now();
+  const total = activeSpotlight.endsAt - activeSpotlight.startedAt;
+  const left = Math.max(0, activeSpotlight.endsAt - now);
+  const progress = Math.min(100, Math.max(0, ((total - left) / total) * 100));
+
+  $("#spotlightLiveName").textContent = `${activeSpotlight.name} · ${activeSpotlight.amount} supporter`;
+  $("#spotlightLiveMessage").textContent = activeSpotlight.message;
+  $("#spotlightSeconds").textContent = `${Math.ceil(left / 1000)}s`;
+  $("#spotlightProgress").style.width = `${progress}%`;
+
+  if (left <= 0) {
+    window.clearInterval(spotlightInterval);
+    activeSpotlight = null;
+    startNextSpotlight();
+  }
+}
+
+function renderSpotlightQueue() {
+  if (!spotlightQueueList) return;
+  const queue = getSpotlightQueue();
+  spotlightQueueList.innerHTML = "";
+
+  if (!queue.length) {
+    spotlightQueueList.innerHTML = `<div class="empty-state">No messages waiting. Add one to test the donor wall.</div>`;
+    return;
+  }
+
+  queue.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "queue-row";
+    row.innerHTML = `
+      <span class="queue-number">${index + 1}</span>
+      <span>
+        <strong>${escapeHtml(item.name)}</strong>
+        <p>${escapeHtml(item.message)}</p>
+      </span>
+      <small>${escapeHtml(item.amount)} · 30s</small>
+    `;
+    spotlightQueueList.appendChild(row);
+  });
+}
+
+function clearSpotlightWall() {
+  localStorage.removeItem("akttm_spotlight_queue");
+  activeSpotlight = null;
+  renderSpotlightQueue();
+  renderEmptySpotlight();
+  showToast("Donor wall cleared in this browser.");
 }
 
 init();

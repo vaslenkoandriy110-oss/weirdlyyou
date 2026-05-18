@@ -31,6 +31,7 @@
       <nav class="top-nav" aria-label="Main navigation">
         <a href="#generator">Generate</a>
         <a href="#leaderboard">Leaderboard</a>
+        <a href="#spotlight">Donor Wall</a>
         <a href="#monetize">Support</a>
       </nav>
     </header>
@@ -68,6 +69,24 @@
           <span>ADVERTISEMENT PLACEHOLDER</span>
           <p>Put real ad code here after approval. Never ask users to click ads.</p>
         </div>
+      </section>
+
+      <section class="spotlight-live glass" id="spotlightLive" aria-live="polite">
+        <div class="spotlight-label">
+          <span class="live-dot"></span>
+          <span>Live donor spotlight</span>
+        </div>
+        <div class="spotlight-content">
+          <div>
+            <p class="spotlight-name" id="spotlightLiveName">No message on screen yet</p>
+            <p class="spotlight-message" id="spotlightLiveMessage">Donate $1 and put your message here for 30 seconds.</p>
+          </div>
+          <div class="spotlight-timer">
+            <strong id="spotlightSeconds">30s</strong>
+            <span>visibility</span>
+          </div>
+        </div>
+        <div class="spotlight-progress" aria-hidden="true"><span id="spotlightProgress"></span></div>
       </section>
 
       <section class="app-grid" id="generator">
@@ -153,8 +172,60 @@
         </section>
       </section>
 
-      <section class="feature-grid">
-        <article class="feature-card glass">
+
+      <section class="donor-wall glass" id="spotlight">
+        <div class="donor-copy">
+          <span class="eyebrow">Monetization idea</span>
+          <h2>Leave a message for everyone to see</h2>
+          <p>
+            This is the viral donation mechanic: a visitor donates $1, writes a short message,
+            and the message appears in the live spotlight for 30 seconds. On GitHub Pages this runs
+            in demo mode. For a real global wall, connect a database and payment webhook.
+          </p>
+          <div class="donor-benefits">
+            <span>⚡ 30-second live spotlight</span>
+            <span>🧼 basic spam filtering</span>
+            <span>📣 built to encourage shares</span>
+          </div>
+        </div>
+
+        <form class="spotlight-form" id="spotlightForm">
+          <div class="demo-badge">DEMO MODE · local browser only</div>
+          <label>
+            <span>Your display name</span>
+            <input id="spotlightNameInput" maxlength="24" placeholder="MemeLord99" autocomplete="off" />
+          </label>
+          <label>
+            <span>Your public message</span>
+            <textarea id="spotlightMessageInput" maxlength="110" placeholder="This site knows too much about me." autocomplete="off"></textarea>
+            <small><span id="messageCounter">0</span>/110 characters</small>
+          </label>
+          <label>
+            <span>Payment note / receipt code</span>
+            <input id="paymentProofInput" maxlength="40" placeholder="optional in demo" autocomplete="off" />
+          </label>
+          <div class="spotlight-actions">
+            <a class="btn secondary" id="spotlightDonateButton" href="#" target="_blank" rel="noreferrer">Donate $1 first</a>
+            <button class="btn primary" type="submit">Put message on wall</button>
+          </div>
+          <p class="form-note">
+            Real version: the button should open Stripe/PayPal/Ko-fi, and a webhook should approve the message automatically.
+          </p>
+        </form>
+
+        <div class="spotlight-queue">
+          <div class="queue-header">
+            <div>
+              <span class="eyebrow">Queue</span>
+              <h3>Waiting messages</h3>
+            </div>
+            <button class="btn ghost" id="clearSpotlightButton" type="button">Clear wall</button>
+          </div>
+          <div class="queue-list" id="spotlightQueueList"></div>
+        </div>
+      </section>
+
+      <section class="feature-grid">        <article class="feature-card glass">
           <span class="feature-icon">💸</span>
           <h3>Donation button</h3>
           <p>Use the button below to connect Buy Me a Coffee, PayPal, Monobank, or any link you want.</p>
