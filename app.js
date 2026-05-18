@@ -5,7 +5,7 @@ const CONFIG = {
   // PayPal example: https://www.paypal.com/paypalme/yourname
   donationUrl: "https://donatello.to/yourname",
   donationLinks: {
-    donatello: "https://donatello.to/",
+    donatello: "https://donatello.to/skelfin",
     monobank: "https://send.monobank.ua/jar/YOUR_JAR_ID",
     paypal: "https://www.paypal.com/paypalme/yourname",
   },
